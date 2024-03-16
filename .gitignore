@@ -1,0 +1,16 @@
+.idea
+.gitsecret/keys/random_seed
+!*.secret
+#secrets/google-service-account.json
+__pycache__/
+secrets/.env
+mydatabase
+google-service-account.json
+db
+/apps/HH/static/
+/config/static/
+/storage/
+/uploads/
+/.env
+/pdf_dir/
+/extract_folder/
