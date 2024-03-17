@@ -2,7 +2,7 @@ import dataclasses
 
 import strawberry
 import strawberry_django
-from django.db.models import ForeignKey
+from django.db.models import ForeignKey, ManyToManyField
 from strawberry_django.optimizer import DjangoOptimizerExtension
 from strawberry import auto
 
@@ -47,14 +47,21 @@ def model_to_dataclass(model, set_relations=False):
     if not set_relations:
         model_name = f"{model_name}Relation"
 
-    model_fields = model._meta.fields
+    model_fields = model._meta.get_fields()
     fields_for_class = {}
     fields_for_filter = {}
     for model_field in model_fields:
         relation = model_field.__dict__.get('related_model', None)
-        if relation and set_relations:
+        is_many_to_many = isinstance(model_field, ManyToManyField)
+        print(model_field, is_many_to_many)
+        if relation and set_relations and not is_many_to_many:
             fields_for_class.update(
                 {model_field.name: wrapped_models_dict[model_field.__dict__['related_model'].__name__]}
+            )
+        elif relation and set_relations and is_many_to_many:
+            print('I AM HERE')
+            fields_for_class.update(
+                {model_field.name: List[wrapped_models_dict[model_field.__dict__['related_model'].__name__]]}
             )
         else:
             fields_for_class.update({model_field.name: auto})
@@ -76,6 +83,7 @@ def model_to_dataclass(model, set_relations=False):
 
 
 app_models = django.apps.apps.get_models()
+# app_models = [models.Recipe]
 models_list = []
 lowercase_list = []
 wrapped_models_dict = {}
