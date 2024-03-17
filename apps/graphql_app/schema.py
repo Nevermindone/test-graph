@@ -6,7 +6,7 @@ from strawberry_django.optimizer import DjangoOptimizerExtension
 from strawberry import auto
 
 from . import models
-from .types import Fruit, Color
+# from .types import Fruit, Color
 from dataclasses import dataclass, make_dataclass, asdict, field
 import django.apps
 from typing import List
@@ -47,13 +47,12 @@ def model_to_dataclass(model):
     for model_field in model_fields:
         relation = model_field.__dict__.get('related_model', None)
         if relation:
-            # fields_for_class.update({model_field.name: relation.__name__})
+            # fields_for_class.update({model_field.name: list[str(relation.__name__)]})
+            # print(relation.__name__)
             fields_for_class.update({model_field.name: auto})
         else:
             fields_for_class.update({model_field.name: auto})
             fields_for_filter.update({model_field.name: auto})
-    # new_dataclass = make_dataclass(model.__name__, list(fields_for_class.items()))
-    # new_filter_dataclass = make_dataclass(f"{model.__name__}Filter", list(fields_for_filter.items()))
     # CREATING CLASSES FOR DATA, FILTERS, PAGINATION AND SORTING
     new_dataclass = type(model.__name__, (), {'__annotations__': fields_for_class})
     new_filter_dataclass = type(f"{model.__name__}Filter", (), {'__annotations__': fields_for_filter})
@@ -71,13 +70,16 @@ def model_to_dataclass(model):
 
 
 app_models = django.apps.apps.get_models()
+print(app_models)
 models_list = []
 lowercase_list = []
 
 for model in app_models:
     wrapped_model = model_to_dataclass(model)
-    print(wrapped_model.__dict__)
+    import sys
 
+    # this = sys.modules[__name__]
+    # this.model._meta.model_name = wrapped_model
     models_list.append(wrapped_model)
     lowercase_list.append(model._meta.model_name)
 
@@ -89,6 +91,31 @@ for index in range(len(lowercase_list)):
 wrapper_func = strawberry.type
 Query = make_dataclass("Query", list_of_tuples_for_query)
 wrapped_query = wrapper_func(Query)
+
+# class Fruit:
+#     id: auto
+#     name: auto
+#     color: 'Color'
+#     shape: auto
+#
+# class Color:
+#     id: auto
+#     name: auto
+#     fruits: 'Fruit'
+#
+#
+# wrapper_func = strawberry_django.type(model=models.Fruit)
+# fruit_wrapped = wrapper_func(Fruit)
+# wrapper_func = strawberry_django.type(model=models.Color)
+# color_wrapped = wrapper_func(Color)
+# print(color_wrapped.__dict__)
+#
+#
+# @strawberry.type
+# class Query:
+#     fruits: list[fruit_wrapped] = strawberry_django.field()
+#     # fruit: Fruit = strawberry_django.field()
+#     color: list[color_wrapped] = strawberry_django.field()
 
 
 schema = strawberry.Schema(
