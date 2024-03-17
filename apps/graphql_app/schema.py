@@ -63,19 +63,9 @@ def create_fields(model, set_relations=False):
     fields_for_filter = {}
     for model_field in model_fields:
         relation = model_field.__dict__.get('related_model', None)
-
-        is_many_to_many = isinstance(model_field, ManyToManyField)
-        if relation and set_relations and not is_many_to_many:
-            fields_for_class.update(
-                {model_field.name: wrapped_models_dict[model_field.__dict__['related_model'].__name__]}
-            )
-        elif relation and set_relations and is_many_to_many:
-            fields_for_class.update(
-                {model_field.name: List[wrapped_models_dict[model_field.__dict__['related_model'].__name__]]}
-            )
-        else:
+        if not relation:
             fields_for_class.update({model_field.name: auto})
-            fields_for_filter.update({model_field.name: auto})
+        fields_for_filter.update({model_field.name: auto})
 
     return fields_for_class, fields_for_filter, model_name
 
@@ -91,6 +81,7 @@ dict_models_fields_setup = {}
 dict_models_straw_models_setup = {}
 dict_models_fields_filters = {}
 
+#CREATE DUMMY STRAWBERY MODELS
 for model in app_models:
     fields_for_class, fields_for_filter, model_name = create_fields(model, set_relations=False)
     dict_models_fields_setup[model] = fields_for_class
@@ -105,7 +96,7 @@ for model in app_models:
     models_list.append(wrapped_model)
     lowercase_list.append(model._meta.model_name)
     wrapped_models_dict.update(wrapped_model_dict)
-
+# MAKING STRAWBERRY DUMMIES INERRACT BY RELATIONS
 for model in dict_models_fields_setup.keys():
     for model_field in model._meta.get_fields():
         relation = model_field.__dict__.get('related_model', None)
@@ -122,7 +113,7 @@ for model, fields in dict_models_fields_setup.items():
     fields_for_class, fields_for_filter, model_name = create_fields(model, set_relations=False)
     wrapped_model, wrapped_model_dict = create_strawberry_model(
         fields,
-        dict_models_fields_filters[model],
+        fields_for_filter,
         model.__name__,
         model
     )
@@ -130,7 +121,7 @@ for model, fields in dict_models_fields_setup.items():
     final_models_list.append(wrapped_model)
 
 
-
+# FORM QUERY AND SCEMA
 list_of_tuples_for_query = []
 for index in range(len(lowercase_list)):
     filed_name = _plural_from_single(lowercase_list[index])
