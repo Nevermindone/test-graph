@@ -37,3 +37,8 @@ class Shape(models.Model):
         max_length=20,
         help_text="field description",
     )
+
+
+class Recipe(models.Model):
+    recipe_name = models.CharField(max_length=100)
+    fruits = models.ManyToManyField(Fruit, related_name='recipes')
