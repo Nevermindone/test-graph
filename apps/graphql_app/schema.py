@@ -29,7 +29,7 @@ from typing import List
 DEVELOPMENT
 
 """
-DEPTH = 2
+DEPTH = 10
 
 def _plural_from_single(s):
     return s.rstrip('y') + 'ies' if s.endswith('y') else s + 's'
