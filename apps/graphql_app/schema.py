@@ -11,25 +11,32 @@ from dataclasses import make_dataclass, field
 import django.apps
 from typing import List
 
-# @strawberry.type
-# class Query:
-#     fruits: List[Fruit] = strawberry_django.field()
-#     recipes: List[Recipe] = strawberry_django.field()
-#
-#
-# schema = strawberry.Schema(
-#     query=Query,
-#     extensions=[
-#         DjangoOptimizerExtension,  # not required, but highly recommended
-#     ],
-# )
-
-"""
-
-DEVELOPMENT
-
-"""
 DEPTH = 10
+
+def make_schema_depth(
+    dict_models_straw_models_setup,
+    dict_models_straw_filter_setup,
+    dict_models_fields_setup,
+    dict_filter_fields_setup
+):
+    counter = 1
+    while counter<=DEPTH:
+        dict_models_fields_setup, dict_filter_fields_setup = add_layer_to_fields(
+            dict_models_straw_models_setup,
+            dict_models_straw_filter_setup,
+            dict_models_fields_setup,
+            dict_filter_fields_setup
+        )
+        print(dict_models_straw_filter_setup)
+        dict_models_straw_models_setup,dict_models_straw_filter_setup, final_models_list = create_new_strawberry_models(
+            dict_models_fields_setup,
+            dict_filter_fields_setup,
+            counter
+        )
+        counter+=1
+
+    return final_models_list
+
 
 def _plural_from_single(s):
     return s.rstrip('y') + 'ies' if s.endswith('y') else s + 's'
@@ -64,9 +71,6 @@ def create_fields(model, set_relations=False):
     fields_for_class = {}
     fields_for_filter = {}
     for model_field in model_fields:
-        relation = model_field.__dict__.get('related_model', None)
-        # if not relation:
-        #     fields_for_class.update({model_field.name: auto})
         fields_for_filter.update({model_field.name: auto})
         fields_for_class.update({model_field.name: auto})
     return fields_for_class, fields_for_filter, model_name
@@ -147,34 +151,9 @@ for model in app_models:
     dict_models_straw_filter_setup[model] = wrapped_filter
     models_list.append(wrapped_model)
     lowercase_list.append(model._meta.model_name)
+
+
 # MAKING STRAWBERRY DUMMIES INTERACT BY RELATIONS
-
-
-def make_schema_depth(
-    dict_models_straw_models_setup,
-    dict_models_straw_filter_setup,
-    dict_models_fields_setup,
-    dict_filter_fields_setup
-):
-    counter = 1
-    while counter<=DEPTH:
-        dict_models_fields_setup, dict_filter_fields_setup = add_layer_to_fields(
-            dict_models_straw_models_setup,
-            dict_models_straw_filter_setup,
-            dict_models_fields_setup,
-            dict_filter_fields_setup
-        )
-        print(dict_models_straw_filter_setup)
-        dict_models_straw_models_setup,dict_models_straw_filter_setup, final_models_list = create_new_strawberry_models(
-            dict_models_fields_setup,
-            dict_filter_fields_setup,
-            counter
-        )
-        counter+=1
-
-    return final_models_list
-
-
 final_models_list = make_schema_depth(
     dict_models_straw_models_setup,
     dict_models_straw_filter_setup,
