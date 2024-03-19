@@ -5,7 +5,7 @@ services:
     image: postgres:12-alpine
     ports:
       - "5432:5432"
-    container_name: backend-db
+    container_name: backend-db-strawberry
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
