@@ -4,6 +4,6 @@ from django.contrib import admin
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('graphql/', include('apps.graphql_app.urls')),
+    path('app2/graphql/', include('apps.graphql_app.urls')),
 ]
 
