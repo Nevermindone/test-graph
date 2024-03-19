@@ -4,18 +4,17 @@ services:
   db:
     image: postgres:12-alpine
     expose:
-      - "5433"
+      - "5434"
     ports:
-      - "5433:5433"
+      - "5434:5434"
     container_name: backend-db-strawberry
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - PORT=5433
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    command: -p 5433
+    command: -p 5434
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8001 --settings=config.settings.local
